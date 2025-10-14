@@ -1,4 +1,4 @@
-@startuml
+@startuml bd
 left to right direction
 skinparam packageStyle rectangle
 actor "Пользователь" as User
@@ -13,15 +13,15 @@ usecase "Принятие заказа" as uc_accept
 usecase "Отметка статуса заказа" as uc_point
 usecase "Принятие задачи от оператора" as uc_taskfromoper
 }
-User --> uc_login
-User --> uc_track
-User --> uc_order
-Oper --> uc_login
-Oper --> uc_track
-Oper --> uc_task
-Oper --> uc_accept
-Cour --> uc_login
-Cour --> uc_track
-Cour --> uc_point
-Cour --> uc_taskfromoper
+User -- uc_login
+User -- uc_track
+User -- uc_order
+Oper -- uc_login
+Oper -- uc_track
+Oper -- uc_task
+Oper -- uc_accept
+Cour -- uc_login
+Cour -- uc_track
+Cour -- uc_point
+Cour -- uc_taskfromoper
 @enduml
