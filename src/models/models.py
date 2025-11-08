@@ -14,12 +14,13 @@ class Cleint:
         self.courier_id = courier_id
 
 class Courier:
-    def __init__(self, id, details, order_id, cleint_id, operator_id):
+    def __init__(self, id, details, order_id, cleint_id, operator_id, status):
         self.id = id #PK
         self.details = details
         self.order_id = order_id #FK
         self.cleint_id = cleint_id #FK
         self.operator_id = operator_id #FK
+        self.status = status
 
 class Order:
     def __init__(self, id, name, status, price):

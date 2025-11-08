@@ -15,10 +15,11 @@ def create_tables(db_name: str = "orders.db"):
             ID INTEGER PRIMARY KEY,
             Name TEXT,
             Status TEXT,
-            Price INTEGER
+            Price INTEGER,
+            Courier_ID INTEGER,
+            FOREIGN KEY(Courier_ID) REFERENCES Courier(ID)
         )
 ''')
-
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS Operator (
             ID INTEGER PRIMARY KEY,
@@ -37,6 +38,7 @@ def create_tables(db_name: str = "orders.db"):
             Order_ID INTEGER,
             Cleint_ID INTEGER,
             Operator_ID INTEGER,
+            Status TEXT,
             FOREIGN KEY(Order_ID) REFERENCES Orders(ID),
             FOREIGN KEY(Cleint_ID) REFERENCES Cleint(ID),
             FOREIGN KEY(Operator_ID) REFERENCES Operator(ID)
@@ -58,7 +60,7 @@ def create_tables(db_name: str = "orders.db"):
     conn.close()
 
 
-def insert_sample_data(db_name: str = "orders.db"):
+def insert_data(db_name: str = "orders.db"):
 
     conn = get_connection(db_name)
     cursor = conn.cursor()
@@ -70,11 +72,16 @@ def insert_sample_data(db_name: str = "orders.db"):
             ("Смартфон Apple iPhone 14 Pro", 52999, 2, 'На складе'),
             ("Смартфон Samsung Galaxy S25 Ultra", 84000, 3, 'На складе')
         ]
+        couriers = [
+            (1, "+79875572173", "Свободен"),
+            (2, "+79105438510", "Свободен"),
+            (3, "+79295640247", "Свободен")
+        ]
         cursor.executemany('INSERT INTO Orders (Name, Price, ID, Status) VALUES (?, ?, ?, ?)', orders)
         print("Добавлены товары.")
         cleint=['sdfsdf','sdfsdfsdf']
         cursor.execute('INSERT INTO Cleint (Address, Details) VALUES (?, ?)', cleint)
         cursor.execute('INSERT INTO Operator (ID) VALUES (?)', (1,))
-        cursor.execute('INSERT INTO Courier (ID) VALUES (?)', (1,))
+        cursor.executemany('INSERT INTO Courier (ID, Details, Status) VALUES (?, ?, ?)', couriers)
     conn.commit()
     conn.close()
