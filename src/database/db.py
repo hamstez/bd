@@ -8,8 +8,6 @@ def get_connection(db_name: str = "orders.db") -> Connection:
 def create_tables(db_name: str = "orders.db"):
 
     conn = get_connection(db_name)
-    cur=conn.cursor()
-    cur.execute("PRAGMA foreign_keys = ON;")
     cursor = conn.cursor()
 
     cursor.execute('''
@@ -19,36 +17,29 @@ def create_tables(db_name: str = "orders.db"):
             Status TEXT,
             Price INTEGER
         )
-    ''')
+''')
 
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS Operator (
             ID INTEGER PRIMARY KEY,
-            Cleint_Address TEXT,
-            Order_Status TEXT,
             Courier_ID INTEGER,
-            Cleint_Details TEXT,
-            Courier_Details TEXT,
             Order_ID INTEGER,
-            FOREIGN KEY(Cleint_Address) REFERENCES Cleint(Address) ON UPDATE CASCADE,
-            FOREIGN KEY(Order_Status) REFERENCES Orders(Status) ON UPDATE CASCADE,
-            FOREIGN KEY(Courier_ID) REFERENCES Courier(ID) ON UPDATE CASCADE,
-            FOREIGN KEY(Cleint_Details) REFERENCES Cleint(Details) ON UPDATE CASCADE,
-            FOREIGN KEY(Courier_Details) REFERENCES Courier(Details) ON UPDATE CASCADE
+            Cleint_ID INTEGER,
+            FOREIGN KEY(Cleint_ID) REFERENCES Cleint(ID),
+            FOREIGN KEY(Order_ID) REFERENCES Orders(ID),
+            FOREIGN KEY(Courier_ID) REFERENCES Courier(ID)
         )
-    ''')
+''')
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS Courier (
             ID INTEGER PRIMARY KEY,
             Details TEXT,
             Order_ID INTEGER,
-            Address_Cleint TEXT,
-            Order_Status TEXT,
-            Cleint_Details TEXT,
-            FOREIGN KEY(Order_ID) REFERENCES Operator(Order_ID),
-            FOREIGN KEY(Address_Cleint) REFERENCES Operator(Cleint_Address),
-            FOREIGN KEY(Order_Status) REFERENCES Orders(Status),
-            FOREIGN KEY(Cleint_Details) REFERENCES Operator(Cleint_Details)
+            Cleint_ID INTEGER,
+            Operator_ID INTEGER,
+            FOREIGN KEY(Order_ID) REFERENCES Orders(ID),
+            FOREIGN KEY(Cleint_ID) REFERENCES Cleint(ID),
+            FOREIGN KEY(Operator_ID) REFERENCES Operator(ID)
         )
 ''')
     cursor.execute('''
@@ -56,13 +47,9 @@ def create_tables(db_name: str = "orders.db"):
             ID INTEGER PRIMARY KEY,
             Details TEXT,
             Address TEXT,
-            Order_Status TEXT,
-            Courier_Details TEXT,
-            Order_Name TEXT,
             Order_ID INTEGER,
-            FOREIGN KEY(Order_Status) REFERENCES Orders(Status),
-            FOREIGN KEY(Courier_Details) REFERENCES Operator(Courier_Details),
-            FOREIGN KEY(Order_Name) REFERENCES Orders(Name),
+            Courier_ID INTEGER,
+            FOREIGN KEY(Courier_ID) REFERENCES Courier(ID),
             FOREIGN KEY(Order_ID) REFERENCES Orders(ID)
         )
 ''')
@@ -80,7 +67,7 @@ def insert_sample_data(db_name: str = "orders.db"):
     if cursor.fetchone()[0] == 0:
         orders = [
             ("Ноутбук Acer Aspire 3u46", 16000, 1, 'На складе'),
-            ("Книга Преступление и наказание", 700, 2, 'На складе'),
+            ("Смартфон Apple iPhone 14 Pro", 52999, 2, 'На складе'),
             ("Смартфон Samsung Galaxy S25 Ultra", 84000, 3, 'На складе')
         ]
         cursor.executemany('INSERT INTO Orders (Name, Price, ID, Status) VALUES (?, ?, ?, ?)', orders)
