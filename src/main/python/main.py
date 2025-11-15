@@ -25,6 +25,7 @@ def main():
             print("3 - Оформить заказ")
             print("4 - Обновить адрес")
             print("5 - Обновить контактные данные")
+            print("6 - Узнать контактные данные курьера")
             print("0 - Выход")
             choice = input("Ваш выбор: ")
 
@@ -34,34 +35,65 @@ def main():
                     print(f'{order.id}, {order.name}, {order.price}')
             
             elif choice == "2":
-                id=int(input("Введите ID товара: "))
-                order=repo.get_order(id)
-                print(f'{order.id}: {order.status}')
+                try:
+                    id=int(input("Введите ID товара: "))
+                except ValueError:
+                    print("\nОшибка ввода!")
+                    return
+                if len(repo.get_all_o(id))>0:
+                    order=repo.get_order(id)
+                    print(f'{order.id}: {order.status}')
+                else:
+                    print("\nНет такого заказа!")
 
             elif choice == '3':
-                id=int(input("Введите ID товара, который хотите заказать: "))
-                order = repo.get_order(id)
-                if order.status!="На складе":
-                    print("Нельзя заказать товар!")
+                try:
+                    id=int(input("Введите ID товара, который хотите заказать: "))
+                except ValueError:
+                    print("\nОшибка ввода!")
+                    return
+                if len(repo.get_all_o(id))>0:
+                    order = repo.get_order(id)
+
+                    if order.status!="На складе":
+                        print("Нельзя заказать товар!")
+
+                    else:
+                        repo.make_order(id)
+                        print("\nГотово")
                 else:
-                    repo.make_order(id)
-                    print("Готово")
+                    print("Нет такого товара!")
 
             elif choice == "4":
                 address=input("Введите адрес: ")
-                repo.update_cleint_address(address)
+                repo.update_client_address(address)
                 print("Готово")
             
             elif choice == '5':
                 details=input('Введите контактные данные: ')
-                repo.update_cleint_details(details)
+                repo.update_client_details(details)
                 print("Готово")
+
+            elif choice == '6':
+                try:
+                    id_cour=int(input("\nВведите ID курьера: "))
+                except ValueError:
+                    print("\nОшибка ввода!")
+                    return
+                if len(repo.get_all_c(id_cour))>0:
+                    courier=repo.get_courier(id_cour)
+                    print(f"{courier.id}, {courier.details}")
+                else:
+                    print("\nНет такого курьера!")
+
+            else:
+                print("\nНеверный выбор!")
 
         elif choice == '2':
             if input("Введите пароль: ") == '123123':
                 print("\nВыберите действие:")
                 print('1 - Отследить заказ')
-                print("2 - Посмотреть новые заказы")
+                print("2 - Посмотреть новые заказы для курьера")
                 print("3 - Выдать курьеру задачу")
                 print("4 - Узнать адрес клента")
                 print("5 - Узнать контактные данные клиента")
@@ -71,31 +103,62 @@ def main():
                 print("0 - Выход")
                 choice=input("Ваш выбор: ")
                 if choice == '1':
-                    id=int(input("Введите ID товара: "))
-                    order=repo.get_order(id)
-                    print(f'{order.id}: {order.status}')
+                    try:
+                        id=int(input("Введите ID товара: "))
+                    except ValueError:
+                        print("\nОшибка ввода!")
+                        return
+                    if len(repo.get_all_o(id))>0:
+                        order=repo.get_order(id)
+                        print(f'{order.id}: {order.status}')
+                    else:
+                        print("\nНет такого заказа!")
 
                 elif choice == '2':
-                    orders=repo.get_new_order()
-                    for order in orders:
-                        print(f'{order.id}, {order.name}, {order.status}')
+                    try:
+                        id_cour=int(input("\nВведите ID курьера: "))
+                    except ValueError:
+                        print("\nОшибка ввода!")
+                        return
+                    if len(repo.get_all_c(id_cour))>0:
+                        orders=repo.get_new_order(id_cour)
+                        for order in orders:
+                            print(f'{order.id}, {order.name}, {order.status}')
+                    else:
+                        print("\nНет такого курьера!")
 
                 elif choice == '3':
-                    id1=int(input("Введите ID товара: "))
-                    id2=int(input("\nВведите ID курьера: "))
-                    repo.update_courier_task(id1,id2)
-                    print("\nГотово")
+                    try:
+                        id1=int(input("Введите ID товара: "))
+                    except ValueError:
+                        print("\nОшибка ввода!")
+                        return
+                    try:
+                        id2=int(input("\nВведите ID курьера: "))
+                    except ValueError:
+                        print("\nОшибка ввода!")
+                        return
+                    if len(repo.get_all_c(id2))>0 and len(repo.get_all_o(id1))>0:
+                        repo.update_courier_task(id1,id2)
+                        print("\nГотово")
+                    else:
+                        print("\nНет такого товара или такого курьера!")
 
                 elif choice == '4':
-                    cleint=repo.get_cleint()
-                    print(f'\n{cleint.address}')
+                    client=repo.get_client()
+                    print(f'\n{client.address}')
 
                 elif choice == '5':
-                    cleint=repo.get_cleint()
-                    print(f'\n{cleint.details}')
+                    client=repo.get_client()
+                    print(f'\n{client.details}')
 
                 elif choice == '6':
-                    courier=repo.get_courier()
+                    try:
+                        id=int(input("\nВведите ID курьера: "))
+                    except ValueError:
+                        print("\nОшибка ввода!")
+                        return
+                    courier=repo.get_courier(id)
                     print(f'\n{courier.details}')
 
                 elif choice == '7':
@@ -105,49 +168,93 @@ def main():
 
                 elif choice == "8":
                     status=input("\nВведите новый статус курьера: ")
-                    id=int(input("\nВведите ID курьера: "))
-                    repo.update_courier_status(status, id)
+                    try:
+                        id=int(input("\nВведите ID курьера: "))
+                    except ValueError:
+                        print("\nОшибка ввода!")
+                        return
+                    if len(repo.get_all_c(id))>0:
+                        repo.update_courier_status(status, id)
+                    else:
+                        print("\nНет такого курьера!")
                     print('\nГотово')
 
-        elif choice == '3':
-            if input("Введите пароль: ") == '234234':
-                print("\nВыберите действие:")
-                print('1 - Отследить заказ')
-                print("2 - Посмотреть новые заказы")
-                print('3 - Обновить статус заказа')
-                print('4 - Посмотреть адрес клиента')
-                print('5 - Посмотреть контактные данные клиента')
+                else:
+                    print("\nНеверный выбор!")
 
-                print("0 - Выход")
-                choice=input("Ваш выбор: ")
-                if choice == '1':
+            else:
+                print("\nНеверный пароль!")
+
+        elif choice == '3':
+            ok=False
+            new_id=0
+            while not ok:
+                try:
+                    cour_id=int(input("Введите ID курьера: \n"))
+                except ValueError:
+                    print("\nОшибка ввода!")
+                    return
+                try:
+                    cour_pass=int(input("Введите пароль курьера: \n"))
+                except ValueError:
+                    print("\nОшибка ввода!")
+                    return
+                if len(repo.get_all_c(cour_id))>0 and (cour_pass==repo.get_courier(cour_id).password):
+                    new_id=cour_id
+                    ok=True
+                else:
+                    print("\nНет такого курьера или неверный пароль")
+
+
+            print("\nВыберите действие:")
+            print('1 - Отследить заказ')
+            print("2 - Посмотреть новые заказы")
+            print('3 - Обновить статус заказа')
+            print('4 - Посмотреть адрес клиента')
+            print('5 - Посмотреть контактные данные клиента')
+
+            print("0 - Выход")
+            choice=input("Ваш выбор: ")
+            if choice == '1':
+                try:
                     id=int(input("Введите ID заказа: "))
+                except ValueError:
+                    print("\nОшибка ввода!")
+                    return
+                if len(repo.get_all_o(id))>0:
                     order=repo.get_order(id)
                     print(f'{order.status}')
+                else:
+                    print("\nНет такого заказа!")
 
-                elif choice == "2":
-                    orders=repo.get_new_order()
+            elif choice == "2":
+                    orders=repo.get_new_order(new_id)
                     for order in orders:
                         print(f'{order.id}, {order.name}, {order.status}')
 
-                elif choice == '3':
-                    id = int(input("\nВведите ID заказа: "))
+            elif choice == '3':
+                    try:
+                        id = int(input("\nВведите ID заказа: "))
+                    except ValueError:
+                        print("\nОшибка ввода!")
+                        return
                     status = input("\nВведите новый статус: ")
-                    repo.update_order_status(id, status)
-                    print("\nГотово")
+                    if len(repo.get_all_o(id))>0:
+                        repo.update_order_status(id, status)
+                        print("\nГотово")
+                    else:
+                        print("\nНет такого заказа!")
 
-                elif choice == "4":
-                    cleint=repo.get_cleint()
-                    print(f'\n{cleint.address}')
+            elif choice == "4":
+                    client=repo.get_client()
+                    print(f'\n{client.address}')
 
-                elif choice == '5':
-                    cleint=repo.get_cleint()
-                    print(f'\n{cleint.details}')
-
+            elif choice == '5':
+                    client=repo.get_client()
+                    print(f'\n{client.details}')
 
             else:
-                print("\nОшибка!")
-
+                print("\nНеверный выбор!")
 
         elif choice == "0":
             print("Выход из программы...")

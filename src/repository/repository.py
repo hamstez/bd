@@ -4,7 +4,7 @@ import sqlite3
 import xml.etree.ElementTree as ET
 import yaml
 
-from src.models.models import Order, Cleint, Operator, Courier
+from src.models.models import Order, Client, Operator, Courier
 
 
 class Repository:
@@ -13,20 +13,20 @@ class Repository:
         self.conn.row_factory = sqlite3.Row
         self.cursor = self.conn.cursor()
 
-    def get_cleint(self):
-        self.cursor.execute("SELECT ID, Details, Address, Order_ID, Courier_ID FROM Cleint WHERE ID = 1")
+    def get_client(self):
+        self.cursor.execute("SELECT ID, Details, Address, Order_ID, Courier_ID FROM Client WHERE ID = 1")
         row = self.cursor.fetchone()
-        return Cleint(id=row["ID"], address=row["Address"], details=row["Details"], order_id=row["Order_ID"], courier_id=row["Courier_ID"])
+        return Client(id=row["ID"], address=row["Address"], details=row["Details"], order_id=row["Order_ID"], courier_id=row["Courier_ID"])
     
     def get_order(self, order_id: int):
-        self.cursor.execute("SELECT ID, Name, Status, Price FROM Orders WHERE ID = ?", (order_id,))
+        self.cursor.execute("SELECT ID, Name, Status, Price, Courier_ID FROM Orders WHERE ID = ?", (order_id,))
         row = self.cursor.fetchone()
-        return Order(id=row["ID"], name=row["Name"], status=row["Status"], price=row["Price"])
+        return Order(id=row["ID"], name=row["Name"], status=row["Status"], price=row["Price"], courier_id=row["Courier_ID"])
     
     def get_courier(self, id: int):
-        self.cursor.execute("SELECT ID, Details, Order_ID, Cleint_ID, Operator_ID, Status FROM Courier WHERE ID = ?", (id,))
+        self.cursor.execute("SELECT ID, Details, Order_ID, Client_ID, Operator_ID, Status, Password FROM Courier WHERE ID = ?", (id,))
         row = self.cursor.fetchone()
-        return Courier(id=row["ID"], details=row["Details"], status=row["Status"], order_id=row["Order_ID"], cleint_id=row["Cleint_ID"], operator_id=row["Operator_ID"])
+        return Courier(id=row["ID"], details=row["Details"], status=row["Status"], order_id=row["Order_ID"], client_id=row["Client_ID"], operator_id=row["Operator_ID"], password=row["Password"])
 
     def update_order_status(self, order_id: int, status: str):
         self.cursor.execute("UPDATE Orders SET Status = ? WHERE ID = ?", (status, order_id))
@@ -37,22 +37,22 @@ class Repository:
         return None
     
     def get_all_orders(self):
-        self.cursor.execute("SELECT ID, Name, Status, Price FROM Orders")
+        self.cursor.execute("SELECT ID, Name, Status, Price, Courier_ID FROM Orders")
         rows = self.cursor.fetchall()
-        return [Order(id=row["ID"], name=row["Name"], status=row["Status"], price=row['Price']) for row in rows]
+        return [Order(id=row["ID"], name=row["Name"], status=row["Status"], price=row['Price'], courier_id=row["Courier_ID"]) for row in rows]
     
-    def update_cleint_details(self, details: str):
-        self.cursor.execute('UPDATE Cleint SET Details = ? WHERE ID = 1', (details,))
+    def update_client_details(self, details: str):
+        self.cursor.execute('UPDATE Client SET Details = ? WHERE ID = 1', (details,))
         return None
     
-    def update_cleint_address(self, address: str):
-        self.cursor.execute('UPDATE Cleint SET Address = ? WHERE ID = 1', (address,))
+    def update_client_address(self, address: str):
+        self.cursor.execute('UPDATE Client SET Address = ? WHERE ID = 1', (address,))
         return None
     
     def get_operator(self):
         self.cursor.execute("SELECT ID, Courier_ID, Order_ID, FROM Operator WHERE ID = 1")
         row=self.cursor.fetchone()
-        return Operator(courier_id=row["Courier_ID"], id=row["ID"], order_id=row["Order_ID"], cleint_id=row["Cleint_ID"])
+        return Operator(courier_id=row["Courier_ID"], id=row["ID"], order_id=row["Order_ID"], client_id=row["Client_ID"])
     
     def make_order(self, id: int):
         self.cursor.execute('UPDATE Orders SET Status = ? WHERE ID = ?', ('Заказано', id))
@@ -62,25 +62,36 @@ class Repository:
         self.cursor.execute('UPDATE Orders SET Status = ? WHERE ID = ?', ("Передано курьеру", id1))
         self.cursor.execute("UPDATE Courier SET Status = ? WHERE ID = ?", ("Занят", id2))
         self.cursor.execute("UPDATE Courier SET Order_ID = ? WHERE ID = ?", (id1, id2))
+        self.cursor.execute("UPDATE Orders SET Courier_ID = ? WHERE ID = ?",(id2, id1))
         return None
 
-    def get_new_order(self):
-        self.cursor.execute("SELECT ID, Name, Status, Price FROM Orders WHERE Status = ?", ("Заказано",))
+    def get_all_o(self, id: int):
+        self.cursor.execute("SELECT * FROM Orders WHERE ID = ?", (id,))
+        rows=self.cursor.fetchall()
+        return [Order(id=row["ID"], name=row["Name"], status=row["Status"], price=row['Price'], courier_id=row["Courier_ID"]) for row in rows]
+
+    def get_all_c(self, id: int):
+        self.cursor.execute("SELECT * FROM Courier WHERE ID = ?", (id,))
+        rows=self.cursor.fetchall()
+        return [Courier(id=row["ID"], details=row["Details"], order_id=row["Order_ID"], operator_id=row["Operator_ID"], client_id=row["Client_ID"], status=row["Status"], password=row["Password"]) for row in rows]
+
+    def get_new_order(self, id: int):
+        self.cursor.execute("SELECT ID, Name, Status, Price, Courier_ID FROM Orders WHERE Courier_ID = ?", (id,))
         rows = self.cursor.fetchall()
-        return [Order(id=row["ID"], name=row["Name"], status=row["Status"], price=row['Price']) for row in rows]
+        return [Order(id=row["ID"], name=row["Name"], status=row["Status"], price=row['Price'], courier_id=row["Courier_ID"]) for row in rows]
 
     def close(self):
         self.conn.commit()
         self.conn.close()
 
     def get_all_couriers(self):
-        self.cursor.execute("SELECT ID, Details, Order_ID, Cleint_ID, Operator_ID, Status FROM Courier",)
+        self.cursor.execute("SELECT ID, Details, Order_ID, Client_ID, Operator_ID, Status, Password FROM Courier",)
         rows = self.cursor.fetchall()
         return [Courier(id=row["ID"], details=row["Details"], status=row["Status"], order_id=row["Order_ID"],
-                       cleint_id=row["Cleint_ID"], operator_id=row["Operator_ID"]) for row in rows]
+                       client_id=row["Client_ID"], operator_id=row["Operator_ID"], password=row["Password"]) for row in rows]
 
     def make_json(self):
-        self.cursor.execute("SELECT c.Details, o.Name, o.Status, o.Price FROM Courier c LEFT JOIN Orders o ON c.Order_ID = o.ID WHERE c.ID = 1")
+        self.cursor.execute("SELECT c.Details, c.ID, o.Name, o.Status, o.Price FROM Courier c LEFT JOIN Orders o ON c.Order_ID = o.ID WHERE c.ID IN (1, 2, 3)")
         data = []
         rows = self.cursor.fetchall()
         for row in rows:
@@ -95,12 +106,13 @@ class Repository:
         return None
 
     def make_csv(self):
-        self.cursor.execute("SELECT c.Details, o.Name, o.Status, o.Price FROM Courier c LEFT JOIN Orders o ON c.Order_ID = o.ID WHERE c.ID = 1")
+        self.cursor.execute(
+            "SELECT c.Details, o.ID, o.Name, o.Status, o.Price FROM Courier c LEFT JOIN Orders o ON c.Order_ID = o.ID WHERE c.ID IN (1, 2, 3)")
         data = []
         rows = self.cursor.fetchall()
         for row in rows:
             data.append(dict(zip([column[0] for column in self.cursor.description], row)))
-        columns=['Details', 'Name', 'Status', 'Price']
+        columns=['Details', 'Name', 'Status', 'Price', 'ID']
         csv_writer = csv.DictWriter(open('out/output.csv', 'w', encoding='utf-8'), fieldnames=columns)
         csv_writer.writeheader()
 
@@ -109,7 +121,8 @@ class Repository:
         return None
 
     def make_xml(self):
-        self.cursor.execute("SELECT c.Details, o.Name, o.Status, o.Price FROM Courier c LEFT JOIN Orders o ON c.Order_ID = o.ID WHERE c.ID = 1")
+        self.cursor.execute(
+            "SELECT c.Details, c.ID, o.Name, o.Status, o.Price FROM Courier c LEFT JOIN Orders o ON c.Order_ID = o.ID WHERE c.ID IN (1, 2, 3)")
         rows = self.cursor.fetchall()
         column_names = [description[0] for description in self.cursor.description]
 
@@ -125,7 +138,8 @@ class Repository:
         return None
 
     def make_yaml(self):
-        self.cursor.execute("SELECT c.Details, o.Name, o.Status, o.Price FROM Courier c LEFT JOIN Orders o ON c.Order_ID = o.ID WHERE c.ID = 1")
+        self.cursor.execute(
+            "SELECT c.Details, c.ID, o.Name, o.Status, o.Price FROM Courier c LEFT JOIN Orders o ON c.Order_ID = o.ID WHERE c.ID IN (1, 2, 3)")
         rows = self.cursor.fetchall()  # Получаем все строки
 
             # 3. Получение имен столбцов для создания словарей
