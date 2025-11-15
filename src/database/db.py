@@ -39,6 +39,7 @@ def create_tables(db_name: str = "orders.db"):
             Client_ID INTEGER,
             Operator_ID INTEGER,
             Status TEXT,
+            Password INTEGER,
             FOREIGN KEY(Order_ID) REFERENCES Orders(ID),
             FOREIGN KEY(Client_ID) REFERENCES Client(ID),
             FOREIGN KEY(Operator_ID) REFERENCES Operator(ID)
@@ -70,18 +71,20 @@ def insert_data(db_name: str = "orders.db"):
         orders = [
             ("Ноутбук Acer Aspire 3u46", 16000, 1, 'На складе'),
             ("Смартфон Apple iPhone 14 Pro", 52999, 2, 'На складе'),
-            ("Смартфон Samsung Galaxy S25 Ultra", 84000, 3, 'На складе')
+            ("Смартфон Samsung Galaxy S25 Ultra", 84000, 3, 'На складе'),
+            ("Планшет Apple iPad Pro 13 M5", 109999, 4, 'На складе'),
+            ("Фотокамера Sony Alpha A6000", 45999, 5, 'На складе')
         ]
         couriers = [
-            (1, "+79875572173", "Свободен"),
-            (2, "+79105438510", "Свободен"),
-            (3, "+79295640247", "Свободен")
+            (1, "+79875572173", "Свободен", 123123),
+            (2, "+79105438510", "Свободен", 234234),
+            (3, "+79295640247", "Свободен", 345345)
         ]
         cursor.executemany('INSERT INTO Orders (Name, Price, ID, Status) VALUES (?, ?, ?, ?)', orders)
         print("Добавлены товары.")
         client=['sdfsdf','sdfsdfsdf']
         cursor.execute('INSERT INTO Client (Address, Details) VALUES (?, ?)', client)
         cursor.execute('INSERT INTO Operator (ID) VALUES (?)', (1,))
-        cursor.executemany('INSERT INTO Courier (ID, Details, Status) VALUES (?, ?, ?)', couriers)
+        cursor.executemany('INSERT INTO Courier (ID, Details, Status, Password) VALUES (?, ?, ?, ?)', couriers)
     conn.commit()
     conn.close()
