@@ -20,29 +20,17 @@ def create_tables(db_name: str = "orders.db"):
             FOREIGN KEY(Courier_ID) REFERENCES Courier(ID)
         )
 ''')
-    cursor.execute('''
-        CREATE TABLE IF NOT EXISTS Operator (
-            ID INTEGER PRIMARY KEY,
-            Courier_ID INTEGER,
-            Order_ID INTEGER,
-            Client_ID INTEGER,
-            FOREIGN KEY(Client_ID) REFERENCES Client(ID),
-            FOREIGN KEY(Order_ID) REFERENCES Orders(ID),
-            FOREIGN KEY(Courier_ID) REFERENCES Courier(ID)
-        )
-''')
+
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS Courier (
             ID INTEGER PRIMARY KEY,
             Details TEXT,
             Order_ID INTEGER,
             Client_ID INTEGER,
-            Operator_ID INTEGER,
             Status TEXT,
             Password INTEGER,
             FOREIGN KEY(Order_ID) REFERENCES Orders(ID),
-            FOREIGN KEY(Client_ID) REFERENCES Client(ID),
-            FOREIGN KEY(Operator_ID) REFERENCES Operator(ID)
+            FOREIGN KEY(Client_ID) REFERENCES Client(ID)
         )
 ''')
     cursor.execute('''
@@ -84,7 +72,6 @@ def insert_data(db_name: str = "orders.db"):
         print("Добавлены товары.")
         client=['sdfsdf','sdfsdfsdf']
         cursor.execute('INSERT INTO Client (Address, Details) VALUES (?, ?)', client)
-        cursor.execute('INSERT INTO Operator (ID) VALUES (?)', (1,))
         cursor.executemany('INSERT INTO Courier (ID, Details, Status, Password) VALUES (?, ?, ?, ?)', couriers)
     conn.commit()
     conn.close()

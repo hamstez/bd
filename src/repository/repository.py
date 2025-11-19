@@ -4,7 +4,7 @@ import sqlite3
 import xml.etree.ElementTree as ET
 import yaml
 
-from src.models.models import Order, Client, Operator, Courier
+from src.models.models import Order, Client, Courier
 
 
 class Repository:
@@ -24,16 +24,40 @@ class Repository:
         return Order(id=row["ID"], name=row["Name"], status=row["Status"], price=row["Price"], courier_id=row["Courier_ID"])
     
     def get_courier(self, id: int):
-        self.cursor.execute("SELECT ID, Details, Order_ID, Client_ID, Operator_ID, Status, Password FROM Courier WHERE ID = ?", (id,))
+        self.cursor.execute("SELECT ID, Details, Order_ID, Client_ID, Status, Password FROM Courier WHERE ID = ?", (id,))
         row = self.cursor.fetchone()
-        return Courier(id=row["ID"], details=row["Details"], status=row["Status"], order_id=row["Order_ID"], client_id=row["Client_ID"], operator_id=row["Operator_ID"], password=row["Password"])
+        return Courier(id=row["ID"], details=row["Details"], status=row["Status"], order_id=row["Order_ID"], client_id=row["Client_ID"], password=row["Password"])
 
-    def update_order_status(self, order_id: int, status: str):
-        self.cursor.execute("UPDATE Orders SET Status = ? WHERE ID = ?", (status, order_id))
+    def update_order_status(self, order_id: int):
+        stat=["На складе", "В работе", "Отменен", "Доставлен"]
+        print("\nВыберите новый статус")
+        print('1 - На складе')
+        print("2 - В работе")
+        print('3 - Отменен')
+        print('4 - Доставлен')
+        try:
+            status_id = int(input("\nВаш выбор: "))
+        except ValueError:
+            print('Ошибка ввода!')
+            return 0
+        if 0<status_id<5:
+            self.cursor.execute("UPDATE Orders SET Status = ? WHERE ID = ?", (stat[status_id-1], order_id))
+        else:
+            print("\nНет такого статуса!")
         return None
 
-    def update_courier_status(self, status: str, id: int):
-        self.cursor.execute("UPDATE Courier SET Status = ? WHERE ID = ?", (status, id))
+    def update_courier_status(self, id: int):
+        stat = ["Свободен", "Занят"]
+        print("\nВыберите новый статус")
+        print('1 - Свободен')
+        print("2 - Занят")
+        try:
+            status_id = int(input("\nВаш выбор: "))
+        except ValueError:
+            print('Ошибка ввода!')
+            return 0
+        if 0<status_id<3:
+            self.cursor.execute("UPDATE Courier SET Status = ? WHERE ID = ?", (stat[status_id-1],id))
         return None
     
     def get_all_orders(self):
@@ -48,11 +72,6 @@ class Repository:
     def update_client_address(self, address: str):
         self.cursor.execute('UPDATE Client SET Address = ? WHERE ID = 1', (address,))
         return None
-    
-    def get_operator(self):
-        self.cursor.execute("SELECT ID, Courier_ID, Order_ID, FROM Operator WHERE ID = 1")
-        row=self.cursor.fetchone()
-        return Operator(courier_id=row["Courier_ID"], id=row["ID"], order_id=row["Order_ID"], client_id=row["Client_ID"])
     
     def make_order(self, id: int):
         self.cursor.execute('UPDATE Orders SET Status = ? WHERE ID = ?', ('Заказано', id))
@@ -73,7 +92,7 @@ class Repository:
     def get_all_c(self, id: int):
         self.cursor.execute("SELECT * FROM Courier WHERE ID = ?", (id,))
         rows=self.cursor.fetchall()
-        return [Courier(id=row["ID"], details=row["Details"], order_id=row["Order_ID"], operator_id=row["Operator_ID"], client_id=row["Client_ID"], status=row["Status"], password=row["Password"]) for row in rows]
+        return [Courier(id=row["ID"], details=row["Details"], order_id=row["Order_ID"], client_id=row["Client_ID"], status=row["Status"], password=row["Password"]) for row in rows]
 
     def get_new_order(self, id: int):
         self.cursor.execute("SELECT ID, Name, Status, Price, Courier_ID FROM Orders WHERE Courier_ID = ?", (id,))
@@ -85,10 +104,10 @@ class Repository:
         self.conn.close()
 
     def get_all_couriers(self):
-        self.cursor.execute("SELECT ID, Details, Order_ID, Client_ID, Operator_ID, Status, Password FROM Courier",)
+        self.cursor.execute("SELECT ID, Details, Order_ID, Client_ID, Status, Password FROM Courier",)
         rows = self.cursor.fetchall()
         return [Courier(id=row["ID"], details=row["Details"], status=row["Status"], order_id=row["Order_ID"],
-                       client_id=row["Client_ID"], operator_id=row["Operator_ID"], password=row["Password"]) for row in rows]
+                       client_id=row["Client_ID"], password=row["Password"]) for row in rows]
 
     def make_json(self):
         self.cursor.execute("SELECT c.Details, c.ID, o.Name, o.Status, o.Price FROM Courier c LEFT JOIN Orders o ON c.Order_ID = o.ID WHERE c.ID IN (1, 2, 3)")
