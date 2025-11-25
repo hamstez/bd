@@ -94,6 +94,7 @@ def main():
                 print("\nНеверный выбор!")
 
         elif choice == '2':
+            print("\nПодсказка: 123123")
             if input("\nВведите пароль: ") == '123123':
                 print("\nВыберите действие:")
                 print('1 - Отследить заказ')
@@ -104,6 +105,7 @@ def main():
                 print("6 - Узнать контактные данные курьера")
                 print("7 - Посмотреть всех курьеров")
                 print('8 - Изменить статус курьера')
+                print("9 - Извлечь данные в файлы")
                 print("0 - Выход")
                 choice=input("Ваш выбор: ")
                 if choice == '1':
@@ -185,6 +187,17 @@ def main():
                         print("\nНет такого курьера!")
                     print('\nГотово')
 
+                elif choice == '9':
+                    try:
+                        os.makedirs('out')
+                    except FileExistsError:
+                        pass
+                    repo.make_xml()
+                    repo.make_yaml()
+                    repo.make_csv()
+                    repo.make_json()
+                    print('\nГотово')
+
                 elif choice == '0':
                     continue
 
@@ -198,6 +211,10 @@ def main():
             ok=False
             new_id=0
             while not ok:
+                print("\nПодсказка:")
+                print('1 - 123123')
+                print('2 - 234234')
+                print('3 - 345345')
                 try:
                     cour_id=int(input("Введите ID курьера: \n"))
                 except ValueError:
@@ -273,15 +290,8 @@ def main():
             break
         else:
             print("Неверный выбор. Попробуйте снова.")
-    try:
-        os.makedirs('out')
-    except FileExistsError:
-        pass
 
-    repo.make_json()
-    repo.make_csv()
-    repo.make_xml()
-    repo.make_yaml()
     repo.close()
+
 if __name__ == "__main__":
     main()
